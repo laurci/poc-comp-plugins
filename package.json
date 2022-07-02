@@ -1,0 +1,18 @@
+{
+    "name": "comp-plugins",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "scripts": {
+        "dev": "ts-node ./src/bin.ts"
+    },
+    "dependencies": {
+        "@ts-morph/bootstrap": "^0.16.0",
+        "typescript": "^4.7.4"
+    },
+    "devDependencies": {
+        "@swc/core": "^1.2.208",
+        "@types/node": "^18.0.0",
+        "ts-node": "^10.8.1"
+    }
+}
