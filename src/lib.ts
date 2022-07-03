@@ -78,8 +78,12 @@ export function createPluginHandleApi<T extends ts.Node>(
 export type PluginHandleCallback<T extends ts.Node> = (handle: PluginHandleApi<T>) => HandleResult | undefined | void;
 export type Finder<T extends ts.Node> = (node: ts.Node) => node is T;
 
+export type PluginSourceFileCallback = (handle: PluginHandleApi<ts.SourceFile>) => ts.SourceFile | undefined | void;
+
 export interface PluginApi {
     match<T extends ts.Node>(finder: Finder<T>, cb: PluginHandleCallback<T>): PluginApi;
+    before(cb: PluginSourceFileCallback): PluginApi;
+    after(cb: PluginSourceFileCallback): PluginApi;
 }
 
 export type PluginFn = (plugin: PluginApi) => void;

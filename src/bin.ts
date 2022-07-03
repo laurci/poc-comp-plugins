@@ -1,7 +1,15 @@
 import path from "path";
 import {createProject, ts} from "@ts-morph/bootstrap";
 import macroPlugin from "./plugins/macro-plugin";
-import {PluginApi, PluginHandleCallback, Finder, ReplaceHandleResult, createPluginHandleApi, PluginFn} from "./lib";
+import {
+    PluginApi,
+    PluginHandleCallback,
+    Finder,
+    ReplaceHandleResult,
+    createPluginHandleApi,
+    PluginFn,
+    PluginSourceFileCallback,
+} from "./lib";
 import callsitePlugin from "./plugins/callsite-plugin";
 import {runOutput} from "./vm";
 import linePlugin from "./plugins/line-plugin";
@@ -13,6 +21,18 @@ const pluginFn: PluginFn[] = [macroPlugin, callsitePlugin, linePlugin];
 
 class PluginApiImpl implements PluginApi {
     public matchHandles: [Finder<any>, PluginHandleCallback<any>][] = [];
+    public beforeHandles: PluginSourceFileCallback[] = [];
+    public afterHandles: PluginSourceFileCallback[] = [];
+
+    before(cb: PluginSourceFileCallback): PluginApi {
+        this.beforeHandles.push(cb);
+        return this;
+    }
+
+    after(cb: PluginSourceFileCallback): PluginApi {
+        this.afterHandles.push(cb);
+        return this;
+    }
 
     match<T extends ts.Node>(finder: Finder<T>, cb: PluginHandleCallback<T>): PluginApi {
         this.matchHandles.push([finder, cb]);
@@ -53,6 +73,11 @@ async function main() {
                 const languageService = project.getLanguageService();
 
                 return (root) => {
+                    root = plugin.beforeHandles.reduce(
+                        (root, cb) => cb(createPluginHandleApi(root, ctx, checker, program, languageService)) ?? root,
+                        root
+                    );
+
                     const next = <T extends ts.Node>(node: T): T => ts.visitEachChild(node, visitor, ctx);
                     const visitor = (node: ts.Node): ts.Node => {
                         let hasNext: boolean = false;
@@ -82,7 +107,12 @@ async function main() {
                         return next(node);
                     };
 
-                    const result = next(root);
+                    let result = next(root);
+
+                    result = plugin.afterHandles.reduce(
+                        (result, cb) => cb(createPluginHandleApi(result, ctx, checker, program, languageService)) ?? result,
+                        result
+                    );
 
                     return result;
                 };
