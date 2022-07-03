@@ -23,12 +23,12 @@ type ParameterReferenceLink = ParameterReference | undefined;
 const referenceMap = new Map<string, ParameterReferenceLink[]>();
 
 function getParameterReferences(checker: ts.TypeChecker, ident: ts.Identifier): ParameterReferenceLink[] {
-    if (referenceMap.has(ident.getText())) return referenceMap.get(ident.getText())!;
+    if (referenceMap.has(ident.text)) return referenceMap.get(ident.text)!;
 
     const links: ParameterReferenceLink[] = [];
 
     function updateAndReturn() {
-        referenceMap.set(ident.getText(), links);
+        referenceMap.set(ident.text, links);
         return links;
     }
 
@@ -119,7 +119,7 @@ export default createPlugin((plugin) => {
         const identifierNode = it.node.expression;
 
         if (!ts.isIdentifier(identifierNode)) return;
-        if (identifierNode.getText() !== "assert") return; // TODO: support other functions
+        if (identifierNode.text !== "assert") return; // TODO: support other functions
 
         const parameterReferences = getParameterReferences(it.checker, identifierNode);
 

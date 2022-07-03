@@ -15,11 +15,11 @@ export default createPlugin((plugin) => {
         ) {
             const ident = expression.expression.expression; // TODO: WTF
 
-            if (ident.getText() == "log") {
+            if (ident.text == "log") {
                 return replace(createLogCall(ctx.factory, node.arguments));
             }
 
-            if (ident.getText() == "magic") {
+            if (ident.text == "magic") {
                 return replace(ctx.factory.createNumericLiteral(42));
             }
         }
