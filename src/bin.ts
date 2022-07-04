@@ -9,6 +9,7 @@ import {
     createPluginHandleApi,
     PluginFn,
     PluginSourceFileCallback,
+    PluginGenerateSourceFileCallback,
 } from "./lib";
 import callsitePlugin from "./plugins/callsite-plugin";
 import {runOutput} from "./vm";
@@ -23,6 +24,12 @@ class PluginApiImpl implements PluginApi {
     public matchHandles: [Finder<any>, PluginHandleCallback<any>][] = [];
     public beforeHandles: PluginSourceFileCallback[] = [];
     public afterHandles: PluginSourceFileCallback[] = [];
+    public pendingSourceFiles: {
+        filePath: string;
+        finalizer: PluginGenerateSourceFileCallback;
+    }[] = [];
+
+    constructor(private program: ts.Program) {}
 
     before(cb: PluginSourceFileCallback): PluginApi {
         this.beforeHandles.push(cb);
@@ -38,87 +45,115 @@ class PluginApiImpl implements PluginApi {
         this.matchHandles.push([finder, cb]);
         return this;
     }
+
+    createSourceFile(p: string, cb: PluginGenerateSourceFileCallback): string {
+        const fullSourcePath = path.join(SRC_DIR, p);
+        // const fullDistPath = path.join(SRC_DIST_DIR, p.replace(".ts", ".js"));
+
+        this.pendingSourceFiles.push({
+            filePath: fullSourcePath,
+            finalizer: cb,
+        });
+
+        return fullSourcePath.replace(".ts", "");
+    }
 }
 
 async function main() {
-    const plugins = pluginFn.map((x) => {
-        const api = new PluginApiImpl();
-        x(api);
-
-        return api;
-    });
-
     const project = await createProject({
         tsConfigFilePath: path.join(SRC_DIR, "tsconfig.json"),
     });
 
     const program = project.createProgram();
 
+    const plugins = pluginFn.map((x) => {
+        const api = new PluginApiImpl(program);
+        x(api);
+
+        return api;
+    });
+
     const output: Record<string, string> = {}; // TODO: better in-memory emit store :)
+    const writer = (file: string, text: string) => {
+        if (file.endsWith(".js")) {
+            output[file] = text;
+        } else {
+            console.log("writer skipped", file);
+        }
+    };
 
-    program.emit(
-        undefined,
-        (file, text) => {
-            if (file.endsWith(".js")) {
-                output[file] = text;
-            } else {
-                console.log("writer skipped", file);
-            }
-        },
-        undefined,
-        false,
-        {
-            before: plugins.map((plugin) => (ctx) => {
-                const checker = program.getTypeChecker();
-                const languageService = project.getLanguageService();
+    program.emit(undefined, writer, undefined, false, {
+        before: plugins.map((plugin) => (ctx) => {
+            const checker = program.getTypeChecker();
+            const languageService = project.getLanguageService();
 
-                return (root) => {
-                    root = plugin.beforeHandles.reduce(
-                        (root, cb) => cb(createPluginHandleApi(root, ctx, checker, program, languageService)) ?? root,
-                        root
-                    );
+            return (root) => {
+                root = plugin.beforeHandles.reduce(
+                    (root, cb) => cb(createPluginHandleApi(root, ctx, checker, program, languageService)) ?? root,
+                    root
+                );
 
-                    const next = <T extends ts.Node>(node: T): T => ts.visitEachChild(node, visitor, ctx);
-                    const visitor = (node: ts.Node): ts.Node => {
-                        let hasNext: boolean = false;
-                        let hasStop: boolean = false;
+                const next = <T extends ts.Node>(node: T): T => ts.visitEachChild(node, visitor, ctx);
+                const visitor = (node: ts.Node): ts.Node => {
+                    let hasNext: boolean = false;
+                    let hasStop: boolean = false;
 
-                        for (const [finder, cb] of plugin.matchHandles) {
-                            if (finder(node)) {
-                                const result = cb(createPluginHandleApi(node, ctx, checker, program, languageService));
+                    for (const [finder, cb] of plugin.matchHandles) {
+                        if (finder(node)) {
+                            const result = cb(createPluginHandleApi(node, ctx, checker, program, languageService));
 
-                                if (!result) {
-                                    hasNext = true;
-                                    continue;
-                                }
+                            if (!result) {
+                                hasNext = true;
+                                continue;
+                            }
 
-                                if (result.type == "next") {
-                                    hasNext = true;
-                                } else if (result.type == "stop") {
-                                    hasStop = true;
-                                } else if (result.type == "replace") {
-                                    return (result as ReplaceHandleResult).node;
-                                }
+                            if (result.type == "next") {
+                                hasNext = true;
+                            } else if (result.type == "stop") {
+                                hasStop = true;
+                            } else if (result.type == "replace") {
+                                return (result as ReplaceHandleResult).node;
                             }
                         }
+                    }
 
-                        if (hasStop && !hasNext) return node;
+                    if (hasStop && !hasNext) return node;
 
-                        return next(node);
-                    };
-
-                    let result = next(root);
-
-                    result = plugin.afterHandles.reduce(
-                        (result, cb) => cb(createPluginHandleApi(result, ctx, checker, program, languageService)) ?? result,
-                        result
-                    );
-
-                    return result;
+                    return next(node);
                 };
-            }),
+
+                let result = next(root);
+
+                result = plugin.afterHandles.reduce(
+                    (result, cb) => cb(createPluginHandleApi(result, ctx, checker, program, languageService)) ?? result,
+                    result
+                );
+
+                return result;
+            };
+        }),
+    });
+
+    const pendingSourceFiles: ts.SourceFile[] = [];
+
+    for (let plugin of plugins) {
+        for (let pendingSource of plugin.pendingSourceFiles) {
+            const finalStr = pendingSource.finalizer(pendingSource.filePath);
+
+            if (finalStr) {
+                const final = project.createSourceFile(pendingSource.filePath, finalStr, {
+                    scriptKind: ts.ScriptKind.TS,
+                });
+                pendingSourceFiles.push(final);
+            }
         }
-    );
+    }
+
+    const newProgram = project.createProgram();
+
+    for (let file of pendingSourceFiles) {
+        newProgram.emit(file, writer, undefined, false);
+    }
 
     runOutput(SRC_DIST_DIR, output);
 }

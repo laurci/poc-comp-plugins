@@ -9,6 +9,8 @@ const originalReadFileSync = fs.readFileSync.bind(fs);
 const originalResolve = module.constructor._resolveFilename;
 
 module.constructor._resolveFilename = (name, mod) => {
+    if (files[name]) return name;
+
     const filename = path.join(mod.path, `${name}.js`);
     if (files[filename]) return filename;
 

@@ -1,6 +1,4 @@
 import {ts} from "@ts-morph/bootstrap";
-import tsc from "typescript";
-
 export {ts};
 
 type HandleResultType = "next" | "stop" | "replace";
@@ -79,11 +77,13 @@ export type PluginHandleCallback<T extends ts.Node> = (handle: PluginHandleApi<T
 export type Finder<T extends ts.Node> = (node: ts.Node) => node is T;
 
 export type PluginSourceFileCallback = (handle: PluginHandleApi<ts.SourceFile>) => ts.SourceFile | undefined | void;
+export type PluginGenerateSourceFileCallback = (filePath: string) => string | undefined | void;
 
 export interface PluginApi {
     match<T extends ts.Node>(finder: Finder<T>, cb: PluginHandleCallback<T>): PluginApi;
     before(cb: PluginSourceFileCallback): PluginApi;
     after(cb: PluginSourceFileCallback): PluginApi;
+    createSourceFile(p: string, cb: PluginGenerateSourceFileCallback): string;
 }
 
 export type PluginFn = (plugin: PluginApi) => void;
