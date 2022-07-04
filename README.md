@@ -60,7 +60,7 @@ Improve the Deepkit type compiler and provide a solid meta-programming platform 
 -   [x] allowing plugins to create fake source files to generate arbitrary code in it and refer to it from the real source files (should also be able to emit them)
 -   [ ] hack the language service and provide cool editor features to plugins
 -   [ ] write a few more example plugins (any suggestions appreciated)
--   [ ] make this work with `incremental` and `watch`
+-   [x] add watch mode
 
 ## Making sense of this codebase
 

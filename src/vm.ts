@@ -5,7 +5,11 @@ export function runOutput(rootDir: string, output: Record<string, string>) {
 
     console.log("output:");
     for (let file of files) {
-        console.log(`file ${file}:\n`, output[file]);
+        if (file.endsWith("index.js") || file.endsWith("test.js")) {
+            console.log(`file ${file}:\n`, output[file]);
+        } else {
+            console.log(`file ${file}`);
+        }
     }
 
     console.log("attempting to run 'index.js'");
@@ -18,5 +22,7 @@ export function runOutput(rootDir: string, output: Record<string, string>) {
 
         process.stdout.write(stdout);
         process.stderr.write(stderr);
+
+        console.log("---------");
     });
 }
