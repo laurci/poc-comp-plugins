@@ -9,11 +9,13 @@
 
 The script creates a new typescript compiler instance (program, checker and language service) and loads the project at `./sample`. It then proceeds to transform the sample with the configured plugins (it creates a transformer factory for each plugin). The plugins then proceed to modify the AST and produce changes where needed. The output is never written to disk, instead it is serialized as JSON and then base64 encoded and transported for execution to a different node process that hacks the shit out of the module resolution system to load the desired files from memory instead of loading them from the disk. This is a hack, for this demo only. If you want to take a look check `./sample/dist/starter.js` and `./src/vm.ts`, but be sure to drink a good amount of holy water before. The main file loaded by the runner process is `sample/index.ts`.
 
-The output of the script is split into the compile time logs (including full dumps of the output files) and the runtime logs. (look after the `running...` log)
+The output of the script is split into the compile time logs (including full dumps of the output files) and the runtime logs. (look after the `attempting to run` log)
 
 ### The line plugin
 
 This is the most basic plugin. It brings c++'s `__line` into typescript :) It basically replaces any uses of the `__line` identifier with a number literal representing the line it is located on.
+
+**NOT VALID ANYMORE** Now it wraps the number literal in an invocation to `__compute_line` function generated in a fake source file and imported when the plugin finds any usage of `__line`.
 
 ### The macro plugin
 

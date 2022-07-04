@@ -6,7 +6,9 @@ export default createPlugin((plugin) => {
 
     const generatedSourcePath = plugin.createSourceFile("./generated/line-plugin/lines.ts", () => {
         return `
-            (global as any).__compute_line = (idx: number) => idx + 1; // line passed by compiler is 0 based
+        if(!global.__compute_line) {
+            global.__compute_line = (idx: number) => idx + 1; // line passed by compiler is 0 based
+        }
         `;
     });
 
@@ -30,7 +32,6 @@ export default createPlugin((plugin) => {
     plugin.after(({node, ctx}) => {
         if (!needsImport) return;
 
-        console.log(node.fileName, generatedSourcePath + ".ts");
         const statements = ctx.factory.createNodeArray([
             ctx.factory.createImportDeclaration(
                 undefined,
