@@ -1,6 +1,9 @@
 import {ts} from "@ts-morph/bootstrap";
 export {ts};
 
+import type tsserver from "typescript/lib/tsserverlibrary";
+export type {tsserver};
+
 type HandleResultType = "next" | "stop" | "replace";
 
 export abstract class HandleResult {
@@ -81,6 +84,7 @@ export type PluginGenerateSourceFileCallback = (filePath: string) => string | un
 
 export interface PluginApi {
     match<T extends ts.Node>(finder: Finder<T>, cb: PluginHandleCallback<T>): PluginApi;
+    // TODO: before all api
     before(cb: PluginSourceFileCallback): PluginApi;
     after(cb: PluginSourceFileCallback): PluginApi;
     createSourceFile(p: string, cb: PluginGenerateSourceFileCallback): string;
@@ -89,5 +93,18 @@ export interface PluginApi {
 export type PluginFn = (plugin: PluginApi) => void;
 
 export function createPlugin(fn: PluginFn) {
+    return fn;
+}
+
+type LanguageServiceOriginalApi = tsserver.server.PluginCreateInfo["languageService"];
+export type LanguageServicePluginApi = {
+    [key in keyof LanguageServiceOriginalApi as LanguageServiceOriginalApi[key] extends (...args: any[]) => any ? key : never]: (
+        cb: LanguageServiceOriginalApi[key] extends (...args: any[]) => any ? LanguageServiceOriginalApi[key] : never
+    ) => void;
+};
+
+export type LanguageServicePluginFn = (plugin: LanguageServicePluginApi, info: tsserver.server.PluginCreateInfo) => void;
+
+export function createLanguageServicePlugin(fn: LanguageServicePluginFn) {
     return fn;
 }

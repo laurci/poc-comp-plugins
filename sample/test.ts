@@ -4,7 +4,7 @@ export function welcome(str: string) {
     const x = magic!!();
     assert(typeof x === "number");
 
-    log!!("hello", str, `from ${__filename}:${__line}`);
+    log!!("hello", str, `from line ${__line}`);
 
     assert(x === 43);
 }

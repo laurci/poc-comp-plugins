@@ -8,20 +8,15 @@ import {
     Finder,
     ReplaceHandleResult,
     createPluginHandleApi,
-    PluginFn,
     PluginSourceFileCallback,
     PluginGenerateSourceFileCallback,
 } from "./lib";
 import {runOutput} from "./vm";
 
-import callsitePlugin from "./plugins/callsite-plugin";
-import macroPlugin from "./plugins/macro-plugin";
-import linePlugin from "./plugins/line-plugin";
+import plugins from "./plugins";
 
 const SRC_DIR = path.join(__dirname, "../sample");
 const SRC_DIST_DIR = path.join(SRC_DIR, "./dist");
-
-const pluginFn: PluginFn[] = [macroPlugin, callsitePlugin, linePlugin];
 
 class PluginApiImpl implements PluginApi {
     public matchHandles: [Finder<any>, PluginHandleCallback<any>][] = [];
@@ -277,7 +272,7 @@ async function main() {
     });
     console.timeEnd("create project");
 
-    const plugins = pluginFn.map((x) => {
+    const pluginInstances = plugins.compiler.map((x) => {
         const api = new PluginApiImpl();
         x(api);
 
@@ -288,9 +283,9 @@ async function main() {
 
     if (isWatchMode) {
         console.log("starting watching project");
-        startWithWatcher(project, plugins);
+        startWithWatcher(project, pluginInstances);
     } else {
-        compileAndRun(project, plugins);
+        compileAndRun(project, pluginInstances);
     }
 }
 

@@ -48,19 +48,22 @@ function assert(condition: unknown, argText?: CallArgumentText<typeof condition>
 }
 ```
 
+## Language service plugins
+
+**DOCS WIP**
+
 ## The why
 
-Improve the Deepkit type compiler and provide a solid meta-programming platform for Typescript. Help people to remove the runtime bloat and allow for easy to implement zero-cost abstractions. For details see my suggestion in the Deepkit Discord server [here](https://discord.com/channels/759513055117180999/956486537208528937/992438187634987068).
+Provide a solid meta-programming platform for Typescript. Help people to remove the runtime bloat and allow for easy to implement zero-cost abstractions. For details see my suggestion in the Deepkit Discord server [here](https://discord.com/channels/759513055117180999/956486537208528937/992438187634987068).
 
 ## To do:
 
--   [ ] simplify the API for basic "preprocessor" style plugins
 -   [x] `before` and `after` hooks for plugins
 -   [x] allowing plugins to append statements to the source file without replacing existing statements
 -   [x] allowing plugins to create fake source files to generate arbitrary code in it and refer to it from the real source files (should also be able to emit them)
--   [ ] hack the language service and provide cool editor features to plugins
--   [ ] write a few more example plugins (any suggestions appreciated)
+-   [x] hack the language service and provide cool editor features to plugins
 -   [x] add watch mode
+-   [ ] write a few more example plugins (any suggestions appreciated) and simplify the plugins API along the way
 
 ## Making sense of this codebase
 

@@ -4,12 +4,13 @@
     "main": "index.js",
     "license": "MIT",
     "scripts": {
-        "dev": "ts-node ./src/bin.ts"
+        "dev": "ts-node ./src/main.ts"
     },
     "dependencies": {
         "@ts-morph/bootstrap": "^0.16.0",
         "chokidar": "^3.5.3",
-        "typescript": "^4.7.4"
+        "typescript": "^4.7.4",
+        "language-service-plugin": "link:./bin/language-service"
     },
     "devDependencies": {
         "@swc/core": "^1.2.208",
