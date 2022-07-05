@@ -2,7 +2,7 @@
 
 ## Running:
 
-1. `yarn` to install deps
+1. `yarn` to install dependencies
 2. `yarn dev` to run the script
 
 ## The what
