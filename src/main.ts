@@ -10,6 +10,7 @@ import {
     createPluginHandleApi,
     PluginSourceFileCallback,
     PluginGenerateSourceFileCallback,
+    VoidCallback,
 } from "./lib";
 import {runOutput} from "./vm";
 
@@ -20,14 +21,21 @@ const SRC_DIST_DIR = path.join(SRC_DIR, "./dist");
 
 class PluginApiImpl implements PluginApi {
     public matchHandles: [Finder<any>, PluginHandleCallback<any>][] = [];
+    public beforeAllHandles: VoidCallback[] = [];
     public beforeHandles: PluginSourceFileCallback[] = [];
     public afterHandles: PluginSourceFileCallback[] = [];
+    public afterAllHandles: VoidCallback[] = [];
     public pendingSourceFiles: {
         filePath: string;
         finalizer: PluginGenerateSourceFileCallback;
     }[] = [];
 
     constructor() {}
+
+    beforeAll(cb: VoidCallback): PluginApi {
+        this.beforeAllHandles.push(cb);
+        return this;
+    }
 
     before(cb: PluginSourceFileCallback): PluginApi {
         this.beforeHandles.push(cb);
@@ -36,6 +44,11 @@ class PluginApiImpl implements PluginApi {
 
     after(cb: PluginSourceFileCallback): PluginApi {
         this.afterHandles.push(cb);
+        return this;
+    }
+
+    afterAll(cb: VoidCallback): PluginApi {
+        this.afterAllHandles.push(cb);
         return this;
     }
 
@@ -67,8 +80,6 @@ function debounce(fn: () => void, ms: number) {
     };
 }
 
-const pendingSourceFilesCache: Map<string, string> = new Map();
-
 function compile(project: Project, plugins: PluginApiImpl[]): Record<string, string> {
     const output: Record<string, string> = {}; // TODO: better in-memory emit store :)
     const writer = (file: string, text: string) => {
@@ -90,6 +101,10 @@ function compile(project: Project, plugins: PluginApiImpl[]): Record<string, str
     console.time("create lang svc");
     const languageService = project.getLanguageService();
     console.timeEnd("create lang svc");
+
+    for (let plugin of plugins) {
+        plugin.beforeAllHandles.map((x) => x());
+    }
 
     console.time("emit");
     program.emit(undefined, writer, undefined, false, {
@@ -144,7 +159,11 @@ function compile(project: Project, plugins: PluginApiImpl[]): Record<string, str
     });
     console.timeEnd("emit");
 
-    const pendingSourceFiles: ts.SourceFile[] = [];
+    for (let plugin of plugins) {
+        plugin.afterAllHandles.map((x) => x());
+    }
+
+    const pendingSourceFileNames: string[] = [];
 
     console.time("generate");
     for (let plugin of plugins) {
@@ -155,18 +174,14 @@ function compile(project: Project, plugins: PluginApiImpl[]): Record<string, str
                 let final = project.getSourceFile(pendingSource.filePath);
 
                 if (final) {
-                    if (pendingSourceFilesCache.get(pendingSource.filePath) != finalStr) {
-                        pendingSourceFilesCache.set(pendingSource.filePath, finalStr);
-                        project.updateSourceFile(pendingSource.filePath, finalStr);
-                    }
+                    project.updateSourceFile(pendingSource.filePath, finalStr);
                 } else {
                     final = project.createSourceFile(pendingSource.filePath, finalStr, {
                         scriptKind: ts.ScriptKind.TS,
                     });
-                    pendingSourceFilesCache.set(pendingSource.filePath, finalStr);
                 }
 
-                pendingSourceFiles.push(final);
+                pendingSourceFileNames.push(pendingSource.filePath);
             }
         }
     }
@@ -177,7 +192,10 @@ function compile(project: Project, plugins: PluginApiImpl[]): Record<string, str
     console.timeEnd("create generated program");
 
     console.time("emit generated");
-    for (let file of pendingSourceFiles) {
+    for (let fileName of pendingSourceFileNames) {
+        const file = project.getSourceFile(fileName);
+        if (!file) continue;
+
         generatedProgram.emit(file, writer, undefined, false);
     }
     console.timeEnd("emit generated");
@@ -204,6 +222,7 @@ function startWithWatcher(project: Project, plugins: PluginApiImpl[]) {
 
     function addToWatch(file: string) {
         if (!file.startsWith(SRC_DIR)) return;
+        if (file.startsWith(SRC_DIST_DIR)) return;
 
         console.log("watch", file);
         watcher.add(file);
@@ -223,7 +242,11 @@ function startWithWatcher(project: Project, plugins: PluginApiImpl[]) {
     const processChanges = debounce(() => compileAndRun(project, plugins), 300);
 
     watcher.on("all", (event, file) => {
+        if (!file.startsWith(SRC_DIR)) return;
+        if (file.startsWith(SRC_DIST_DIR)) return;
+
         console.log("watcher", event, file);
+
         switch (event) {
             case "add": {
                 addToWatch(file);
@@ -289,5 +312,4 @@ async function main() {
     }
 }
 
-console.time("full execution");
-main().then(() => console.timeEnd("full execution"));
+main();

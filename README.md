@@ -7,7 +7,7 @@
 
 ## The what
 
-The script creates a new typescript compiler instance (program, checker and language service) and loads the project at `./sample`. It then proceeds to transform the sample with the configured plugins (it creates a transformer factory for each plugin). The plugins then proceed to modify the AST and produce changes where needed. The output is never written to disk, instead it is serialized as JSON and then base64 encoded and transported for execution to a different node process that hacks the shit out of the module resolution system to load the desired files from memory instead of loading them from the disk. This is a hack, for this demo only. If you want to take a look check `./sample/dist/starter.js` and `./src/vm.ts`, but be sure to drink a good amount of holy water before. The main file loaded by the runner process is `sample/index.ts`.
+The script creates a new typescript compiler instance (program, checker and language service) and loads the project at `./sample`. It then proceeds to transform the sample with the configured plugins (it creates a transformer factory for each plugin). The plugins then proceed to modify the AST and produce changes where needed. The output is written to disk and a node process starts running `index.js`.
 
 The output of the script is split into the compile time logs (including full dumps of the output files) and the runtime logs. (look after the `attempting to run` log)
 
@@ -48,6 +48,10 @@ function assert(condition: unknown, argText?: CallArgumentText<typeof condition>
 }
 ```
 
+### The auto register plugin
+
+This plugin looks for exported class declarations that end with `Service` ex `RandomService` and automatically creates a registry that contains references to all of them. Those references can then be used to create instances of the services. The output of this plugin is a generated file that must be imported.
+
 ## Language service plugins
 
 **DOCS WIP**
@@ -63,7 +67,7 @@ Provide a solid meta-programming platform for Typescript. Help people to remove 
 -   [x] allowing plugins to create fake source files to generate arbitrary code in it and refer to it from the real source files (should also be able to emit them)
 -   [x] hack the language service and provide cool editor features to plugins
 -   [x] add watch mode
--   [ ] write a few more example plugins (any suggestions appreciated) and simplify the plugins API along the way
+-   [x] **NOT IN SCOPE ANYMORE** write a few more example plugins (any suggestions appreciated) and simplify the plugins API along the way
 
 ## Making sense of this codebase
 

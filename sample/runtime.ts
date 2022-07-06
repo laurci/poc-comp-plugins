@@ -1,4 +1,3 @@
-import nativeAssert from "assert";
 import path from "path";
 
 function assertNotReached(): any {
@@ -35,4 +34,13 @@ export function assert(condition: unknown, argText?: CallArgumentText<typeof con
     if (!condition) {
         throw new AssertionError(argText, position.line, position.col, position.file);
     }
+}
+
+export function getRegisteredServices() {
+    require("./generated/auto-register-plugin/map");
+
+    const registryMap = (global as any).__auto_svc_registry_map as {new: (...args: any[]) => any}[];
+    if (!registryMap) return [];
+
+    return registryMap;
 }

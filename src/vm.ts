@@ -1,28 +1,26 @@
-import {exec} from "child_process";
+import {execSync} from "child_process";
+import fs from "fs";
+import path from "path";
 
-export function runOutput(rootDir: string, output: Record<string, string>) {
+export async function runOutput(rootDir: string, output: Record<string, string>) {
     const files = Object.keys(output);
 
-    console.log("output:");
-    for (let file of files) {
-        if (file.endsWith("index.js") || file.endsWith("test.js")) {
-            console.log(`file ${file}:\n`, output[file]);
-        } else {
-            console.log(`file ${file}`);
-        }
-    }
+    await Promise.all(
+        files.map(async (file) => {
+            const dir = path.dirname(file);
+            if (!fs.existsSync(dir)) {
+                await fs.promises.mkdir(dir, {recursive: true});
+            }
+            await fs.promises.writeFile(file, output[file]);
+        })
+    );
 
     console.log("attempting to run 'index.js'");
 
-    exec(`node ./starter.js ${Buffer.from(JSON.stringify(output)).toString("base64")}`, {cwd: rootDir}, (err, stdout, stderr) => {
-        if (err) {
-            console.error(err);
-            return;
-        }
-
-        process.stdout.write(stdout);
-        process.stderr.write(stderr);
-
-        console.log("---------");
-    });
+    try {
+        execSync(`node ./index.js`, {cwd: rootDir, stdio: "inherit"});
+    } catch (e: any) {
+        console.error("process exit", e.status);
+    }
+    console.log("\n\n\n");
 }
