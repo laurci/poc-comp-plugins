@@ -47,7 +47,7 @@ function init({typescript: ts}: LanguageServiceInitArgs) {
         for (const pluginFn of plugins.languageService) {
             const data: LanguageServicePluginData = new Map();
             const proxy = createLanguageServicePluginApiProxy(data);
-            pluginFn(proxy, {...info, languageService: cloneLanguageService(result)});
+            pluginFn(proxy, {...info, languageService: cloneLanguageService(result)}, ts);
             result = patchLanguageService(result, data);
         }
 

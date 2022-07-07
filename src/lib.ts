@@ -105,7 +105,11 @@ export type LanguageServicePluginApi = {
     ) => void;
 };
 
-export type LanguageServicePluginFn = (plugin: LanguageServicePluginApi, info: tsserver.server.PluginCreateInfo) => void;
+export type LanguageServicePluginFn = (
+    plugin: LanguageServicePluginApi,
+    info: tsserver.server.PluginCreateInfo,
+    ts: typeof tsserver
+) => void;
 
 export function createLanguageServicePlugin(fn: LanguageServicePluginFn) {
     return fn;

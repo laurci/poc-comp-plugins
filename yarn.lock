@@ -181,6 +181,11 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.0.0.tgz#67c7b724e1bcdd7a8821ce0d5ee184d3b4dd525a"
   integrity sha512-cHlGmko4gWLVI27cGJntjs/Sj8th9aYwplmZFwmmgYQQvL5NUsgVJG7OddLvNfLqYS31KFN0s3qlaD9qCaxACA==
 
+"@types/ts-expose-internals@npm:ts-expose-internals@4.7.4":
+  version "4.7.4"
+  resolved "https://registry.yarnpkg.com/ts-expose-internals/-/ts-expose-internals-4.7.4.tgz#d135c8e16ca668707956a6f034997970af4675df"
+  integrity sha512-y0CwDHVk/IpkAu/g7xGmxej/9homOQG2FMr1iU3ir+N4hfjVmQMWxjGXqYFDloZnU85RNubWctl/UXW90Nd6bg==
+
 acorn-walk@^8.1.1:
   version "8.2.0"
   resolved "https://registry.yarnpkg.com/acorn-walk/-/acorn-walk-8.2.0.tgz#741210f2e2426454508853a2f44d0ab83b7f69c1"
@@ -413,7 +418,7 @@ ts-node@^10.8.1:
     v8-compile-cache-lib "^3.0.1"
     yn "3.1.1"
 
-typescript@^4.7.4:
+typescript@4.7.4:
   version "4.7.4"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.7.4.tgz#1a88596d1cf47d59507a1bcdfb5b9dfe4d488235"
   integrity sha512-C0WQT0gezHuw6AdY1M2jxUO83Rjf0HP7Sk1DtXj6j1EwkQNZrHAg2XPWlq62oqEhYvONq5pkC2Y9oPljWToLmQ==
