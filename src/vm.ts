@@ -18,7 +18,7 @@ export async function runOutput(rootDir: string, output: Record<string, string>)
     console.log("attempting to run 'index.js'");
 
     try {
-        execSync(`node ./index.js`, {cwd: rootDir, stdio: "inherit"});
+        execSync(`node ./index.js`, {cwd: path.join(rootDir, "sample"), stdio: "inherit"});
     } catch (e: any) {
         console.error("process exit", e.status);
     }

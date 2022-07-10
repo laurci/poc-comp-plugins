@@ -107,7 +107,7 @@ function compile(project: Project, plugins: PluginApiImpl[]): Record<string, str
     }
 
     console.time("emit");
-    program.emit(undefined, writer, undefined, false, {
+    const emitResult = program.emit(undefined, writer, undefined, false, {
         before: plugins.map((plugin, pId) => (ctx) => {
             return (root) => {
                 console.time(`plugin ${pId} ${root.fileName}`);
@@ -158,6 +158,22 @@ function compile(project: Project, plugins: PluginApiImpl[]): Record<string, str
         }),
     });
     console.timeEnd("emit");
+
+    const diagnosticsText = ts.formatDiagnostics(emitResult.diagnostics, {
+        getCanonicalFileName(fileName: string) {
+            return fileName;
+        },
+        getCurrentDirectory() {
+            return program.getCurrentDirectory();
+        },
+        getNewLine() {
+            return "\n";
+        },
+    });
+
+    if (diagnosticsText.trim().length > 0) {
+        console.log("diagnostics", diagnosticsText);
+    }
 
     for (let plugin of plugins) {
         plugin.afterAllHandles.map((x) => x());

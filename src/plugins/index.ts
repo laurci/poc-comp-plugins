@@ -4,13 +4,15 @@ import callsitePlugin from "./callsite-plugin";
 import macroPlugin from "./macro-plugin";
 import linePlugin from "./line-plugin";
 
-import removeApplyPlugin from "./remove-apply-plugin";
 import removeCallerPlugin from "./remove-caller-plugin";
 import autoRegisterPlugin from "./auto-register-plugin";
 
+import deriveCompilerPlugin from "./derive/compiler";
+import deriveLanguageServicePlugin from "./derive/language-service";
+
 const plugins = {
-    compiler: [macroPlugin, callsitePlugin, linePlugin, autoRegisterPlugin] as PluginFn[],
-    languageService: [removeCallerPlugin, removeApplyPlugin] as LanguageServicePluginFn[],
+    compiler: [macroPlugin, callsitePlugin, linePlugin, autoRegisterPlugin, deriveCompilerPlugin] as PluginFn[],
+    languageService: [removeCallerPlugin, deriveLanguageServicePlugin] as LanguageServicePluginFn[],
 };
 
 export default plugins;

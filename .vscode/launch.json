@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Attach to TS Server",
+            "protocol": "inspector",
+            "port": 5667
+        }
+    ]
+}

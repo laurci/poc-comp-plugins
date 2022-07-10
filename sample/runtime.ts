@@ -1,3 +1,4 @@
+import type {Class} from "type-fest";
 import path from "path";
 
 function assertNotReached(): any {
@@ -43,4 +44,27 @@ export function getRegisteredServices() {
     if (!registryMap) return [];
 
     return registryMap;
+}
+
+export abstract class Derivable {
+    constructor(protected instance: any, protected instanceClass: Class<any>) {}
+}
+
+type DerivableConstructor<T> = {new (): T};
+
+export function derive<T1>(t1: DerivableConstructor<T1>): DerivableConstructor<T1>;
+export function derive<T1, T2>(t1: DerivableConstructor<T1>, t2: DerivableConstructor<T2>): DerivableConstructor<T1 & T2>;
+export function derive<T1, T2, T3>(
+    t1: DerivableConstructor<T1>,
+    t2: DerivableConstructor<T2>,
+    t3: DerivableConstructor<T3>
+): DerivableConstructor<T1 & T2 & T3>;
+export function derive<T1, T2, T3, T4>(
+    t1: DerivableConstructor<T1>,
+    t2: DerivableConstructor<T2>,
+    t3: DerivableConstructor<T3>,
+    t4: DerivableConstructor<T4>
+): DerivableConstructor<T1 & T2 & T3 & T4>;
+export function derive(...args: any[]) {
+    return assertNotReached();
 }

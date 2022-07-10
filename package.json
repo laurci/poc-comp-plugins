@@ -17,6 +17,7 @@
         "@swc/core": "^1.2.208",
         "@types/chokidar": "^2.1.3",
         "@types/node": "^18.0.0",
-        "ts-node": "^10.8.1"
+        "ts-node": "^10.8.1",
+        "type-fest": "^2.16.0"
     }
 }
