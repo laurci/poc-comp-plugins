@@ -20,14 +20,14 @@ class WelcomeMessage extends derive(Greet, Serializable) {
 }
 
 export function welcome(str: string) {
-    const x = magic!!();
+    const x = magic!();
     assert(typeof x === "number");
 
     const message = new WelcomeMessage();
     message.hello();
     console.log(message.toByteArray());
 
-    log!!("hello", str, `from line ${__line}`);
+    log!("hello", str, `from line ${__line}`);
 
     assert(x === 43);
 }

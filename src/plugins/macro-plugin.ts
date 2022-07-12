@@ -8,12 +8,8 @@ export default createPlugin((plugin) => {
     plugin.match(ts.isCallExpression, ({node, ctx, replace}) => {
         const expression = node.expression;
 
-        if (
-            ts.isNonNullExpression(expression) &&
-            ts.isNonNullExpression(expression.expression) &&
-            ts.isIdentifier(expression.expression.expression)
-        ) {
-            const ident = expression.expression.expression; // TODO: WTF
+        if (ts.isNonNullExpression(expression) && ts.isIdentifier(expression.expression)) {
+            const ident = expression.expression; // TODO: WTF
 
             if (ident.text == "log") {
                 return replace(createLogCall(ctx.factory, node.arguments));
