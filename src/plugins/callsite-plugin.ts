@@ -119,7 +119,7 @@ export default createPlugin((plugin) => {
         const identifierNode = it.node.expression;
 
         if (!ts.isIdentifier(identifierNode)) return;
-        if (identifierNode.text !== "assert") return; // TODO: support other functions
+        if (identifierNode.text !== "assert" && identifierNode.text !== "debug") return; // TODO: support other functions
 
         const parameterReferences = getParameterReferences(it.checker, identifierNode);
 

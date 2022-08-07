@@ -1,4 +1,4 @@
-import {assert, Derivable, derive, log, magic} from "./runtime";
+import {assert, debug, Derivable, derive, log, magic} from "./runtime";
 
 export abstract class Greet extends Derivable {
     abstract hello(): void;
@@ -28,6 +28,8 @@ export function welcome(str: string) {
     console.log(message.toByteArray());
 
     log!("hello", str, `from line ${__line}`);
+
+    debug(message);
 
     assert(x === 43);
 }

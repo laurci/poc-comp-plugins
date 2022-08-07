@@ -83,7 +83,7 @@ function debounce(fn: () => void, ms: number) {
 function compile(project: Project, plugins: PluginApiImpl[]): Record<string, string> {
     const output: Record<string, string> = {}; // TODO: better in-memory emit store :)
     const writer = (file: string, text: string) => {
-        if (file.endsWith(".js")) {
+        if (file.endsWith(".js") || file.endsWith(".jsx")) {
             output[file] = text;
         } else {
             console.log("writer skipped", file);

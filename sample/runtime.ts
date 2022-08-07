@@ -1,5 +1,6 @@
 import type {Class} from "type-fest";
 import path from "path";
+import {inspect} from "util";
 
 function assertNotReached(): any {
     throw new Error("Unreachable");
@@ -35,6 +36,12 @@ export function assert(condition: unknown, argText?: CallArgumentText<typeof con
     if (!condition) {
         throw new AssertionError(argText, position.line, position.col, position.file);
     }
+}
+
+export function debug(val: any, argText?: CallArgumentText<typeof val>, position?: CallPosition) {
+    if (!argText || !position) throw new Error("Invalid call to debug.");
+
+    console.log(`[DEBUG][${path.basename(position.file)}:${position.line}] ${argText} = `, inspect(val, false, null, true));
 }
 
 export function getRegisteredServices() {

@@ -10,8 +10,10 @@ import autoRegisterPlugin from "./auto-register-plugin";
 import deriveCompilerPlugin from "./derive/compiler";
 import deriveLanguageServicePlugin from "./derive/language-service";
 
+import decoratorXCompilerPlugin from "./decoratorx/compiler";
+
 const plugins = {
-    compiler: [macroPlugin, callsitePlugin, linePlugin, autoRegisterPlugin, deriveCompilerPlugin] as PluginFn[],
+    compiler: [macroPlugin, callsitePlugin, linePlugin, autoRegisterPlugin, deriveCompilerPlugin, decoratorXCompilerPlugin] as PluginFn[],
     languageService: [removeCallerPlugin, deriveLanguageServicePlugin] as LanguageServicePluginFn[],
 };
 

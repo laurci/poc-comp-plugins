@@ -14,7 +14,10 @@ export default createPlugin((plugin) => {
 
             imports += `import {${definitionsMap[file].join(", ")}} from "./${path
                 .relative(path.dirname(generatedSourcePath), file)
-                .replace(".ts", "")}";\n`;
+                .replace(".ts", "")
+                .replace(/\\/gi, "/")}";\n`;
+
+            console.log(imports);
 
             for (let className of definitionsMap[file]) {
                 calls += `__auto_svc_registry_push(${className});\n`;
