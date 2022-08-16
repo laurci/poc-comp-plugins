@@ -11,10 +11,11 @@ import deriveCompilerPlugin from "./derive/compiler";
 import deriveLanguageServicePlugin from "./derive/language-service";
 
 import decoratorXCompilerPlugin from "./decoratorx/compiler";
+import decoratorXLanguageServicePlugin from "./decoratorx/language-service";
 
 const plugins = {
     compiler: [macroPlugin, callsitePlugin, linePlugin, autoRegisterPlugin, deriveCompilerPlugin, decoratorXCompilerPlugin] as PluginFn[],
-    languageService: [removeCallerPlugin, deriveLanguageServicePlugin] as LanguageServicePluginFn[],
+    languageService: [removeCallerPlugin, deriveLanguageServicePlugin, decoratorXLanguageServicePlugin] as LanguageServicePluginFn[],
 };
 
 export default plugins;

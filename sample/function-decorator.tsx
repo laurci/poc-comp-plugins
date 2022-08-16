@@ -1,11 +1,19 @@
 type ReactLogFlags = 'render' | 'after-render';
+
+
+type FunctionDecorator = { __dec: "function" };
+function makeFunctionDecorator<T extends any[]>(): (...args: T) => FunctionDecorator {
+    return () => {
+        return { __dec: "function" }
+    };
+}
+
 interface LogOptions {
     react?: ReactLogFlags[]
 };
 
-function log(options?: LogOptions): any {
-    return {} as any;
-}
+
+const log = makeFunctionDecorator<[options?: LogOptions]>();
 
 declare namespace JSX {
     interface IntrinsicElements {
@@ -20,7 +28,7 @@ function WelcomeComponent() {
     return <div>hello world!</div>;
 }
 
-@log()
+@log({})
 function randomFunc() {
     console.log("This is random");
 }

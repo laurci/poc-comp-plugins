@@ -1,30 +1,4 @@
-import {createLanguageServicePlugin, ts} from "../../lib";
-
-function findNodeAtLocation(node: ts.Node, position: number): ts.Node | undefined {
-    if (node.getStart() === position) {
-        return node;
-    }
-
-    for (const child of node.getChildren()) {
-        const foundNode = findNodeAtLocation(child, position);
-        if (foundNode) {
-            return foundNode;
-        }
-    }
-
-    return undefined;
-}
-
-function findUpperNode<T extends ts.Node>(startNode: ts.Node, finder: (node: ts.Node) => node is T): T | undefined {
-    let node = startNode;
-    while (node) {
-        if (finder(node)) {
-            return node as T;
-        }
-        node = node.parent;
-    }
-    return undefined;
-}
+import {createLanguageServicePlugin, findNodeAtLocation, findUpperNode, ts} from "../../lib";
 
 export default createLanguageServicePlugin((plugin, {languageService, project}) => {
     plugin.getSemanticDiagnostics((filename) => {
@@ -68,23 +42,6 @@ export default createLanguageServicePlugin((plugin, {languageService, project}) 
                 const isDerive = callIdentifier.text == "derive";
 
                 return !isDerive;
-            })
-            .filter((diagnostic) => {
-                if (diagnostic.category != ts.DiagnosticCategory.Error || diagnostic.code != 1206) return true;
-                if (typeof diagnostic.start == "undefined") return true;
-
-                const file = languageService.getProgram()?.getSourceFile(filename);
-                if (!file) return true;
-
-                const node = findNodeAtLocation(file, diagnostic.start);
-                if (!node) return true;
-
-                if (ts.isFunctionDeclaration(node)) {
-                    // we should also check if the decorator is a function decorator.
-                    return false;
-                }
-
-                return true;
             });
     });
 });

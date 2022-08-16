@@ -114,3 +114,29 @@ export type LanguageServicePluginFn = (
 export function createLanguageServicePlugin(fn: LanguageServicePluginFn) {
     return fn;
 }
+
+export function findNodeAtLocation(node: ts.Node, position: number): ts.Node | undefined {
+    if (node.getStart() === position) {
+        return node;
+    }
+
+    for (const child of node.getChildren()) {
+        const foundNode = findNodeAtLocation(child, position);
+        if (foundNode) {
+            return foundNode;
+        }
+    }
+
+    return undefined;
+}
+
+export function findUpperNode<T extends ts.Node>(startNode: ts.Node, finder: (node: ts.Node) => node is T): T | undefined {
+    let node = startNode;
+    while (node) {
+        if (finder(node)) {
+            return node as T;
+        }
+        node = node.parent;
+    }
+    return undefined;
+}
